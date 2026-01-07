@@ -66,69 +66,69 @@ resource "aws_route_table_association" "public_rt_assoc" {
   route_table_id = aws_route_table.public_rt.id
 }
 #================================================================
-resource "aws_network_acl" "public_nacl" {
+resource "aws_network_acl" "ACL_public_subnet" {
   vpc_id = aws_vpc.justvpc.id
-
-  egress {
-    protocol   = "All traffic"
-    rule_no    = 100
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
-  }
-
-  ingress {
-    protocol   = "All traffic"
-    rule_no    = 100
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 22
-    to_port    = 22
-  }
+  subnet_ids = [aws_subnet.public_subnet.id]
 
   tags = {
-    Name = "public_nacl"
+    Name = "ACL_public_subnet"
   }
 }
 
-resource "aws_network_acl_association" "public_nacl_assoc" {
-  subnet_id = aws_subnet.public_subnet.id
-  network_acl_id = aws_network_acl.public_nacl.id
+resource "aws_network_acl_rule" "ACL_public_subnet" {
+  network_acl_id = aws_network_acl.ACL_public_subnet.id
+  rule_number = 100
+  egress = false
+  protocol = "all"
+  rule_action = "allow"
+  cidr_block = aws_vpc.justvpc.cidr_block
+}
+
+resource "aws_network_acl_rule" "ACL_public_subnet2" {
+  network_acl_id = aws_network_acl.ACL_public_subnet.id
+  rule_number = 200
+  egress = false
+  protocol = "all"
+  rule_action = "allow"
+  cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_network_acl_rule" "ACL_public_subnet3" {
+  network_acl_id = aws_network_acl.ACL_public_subnet.id
+  rule_number = 100
+  egress = true
+  protocol = "all"
+  rule_action = "allow"
+  cidr_block = "0.0.0.0/0"
 }
 
 #================================================================
 
 
-resource "aws_network_acl" "private_nacl" {
+resource "aws_network_acl" "ACL_private_subnet" {
   vpc_id = aws_vpc.justvpc.id
-
-  egress {
-    protocol   = "All traffic"
-    rule_no    = 100
-    action     = "allow"
-    cidr_block = "10.0.0.0/16"
-    from_port  = 22
-    to_port    = 22
-  }
-
-  ingress {
-    protocol   = "All traffic"
-    rule_no    = 100
-    action     = "allow"
-    cidr_block = "10.0.0.0/16"
-    from_port  = 22
-    to_port    = 22
-  }
+  subnet_ids = [aws_subnet.private_subnet.id]
 
   tags = {
-    Name = "public_nacl"
+    Name = "ACL_private_subnet"
   }
 }
 
-resource "aws_network_acl_association" "private_nacl_assoc" {
-  subnet_id = aws_subnet.private_subnet.id
-  network_acl_id = aws_network_acl.private_nacl.id
+resource "aws_network_acl_rule" "ACL_private_subnet" {
+  network_acl_id = aws_network_acl.ACL_private_subnet.id
+  rule_number = 100
+  egress = false
+  protocol = "all"
+  rule_action = "allow"
+  cidr_block = aws_vpc.justvpc.cidr_block
+}
+resource "aws_network_acl_rule" "ACL_private_subnet2" {
+  network_acl_id = aws_network_acl.ACL_private_subnet.id
+  rule_number = 200
+  egress = true
+  protocol = "all"
+  rule_action = "allow"
+  cidr_block = aws_vpc.justvpc.cidr_block
 }
 
 #================================================================
@@ -217,8 +217,30 @@ resource "aws_route_table_association" "private_rt_with_nat_assoc" {
   route_table_id = aws_route_table.private_rt_with_nat.id
 }
 
+#================================================================
+#create ec2 instance in the public subnet
 
+#!/bin/bash
+#install apache on the public instance
+resource "aws_instance" "install_apache" {
+  ami           = "ami-0f5fcdfbd140e4ab7" #Amazon Linux 2 AMI (HVM), SSD Volume Type - us-east-2
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public_subnet.id
+  security_groups = [aws_security_group.public_instance_sg.id]
 
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo apt update
+              apt list --upgradable
+              sudo apt install httpd -y
+              yum update -y
+              yum install -y httpd
+              systemctl start httpd
+              systemctl enable httpd
+              echo "<h1>Welcome to the Web Server</h1>" > /var/www/html/index.html
+              EOF
 
-
-
+  tags = {
+    Name = "install_apache"
+  }
+}
