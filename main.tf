@@ -66,23 +66,30 @@ resource "aws_route_table_association" "public_rt_assoc" {
   route_table_id = aws_route_table.public_rt.id
 }
 #================================================================
-
 resource "aws_network_acl" "public_nacl" {
   vpc_id = aws_vpc.justvpc.id
-tags = {
-  Name = "public_nacl"
-}
-}
 
-resource "aws_network_acl_rule" "public_nacl_rule" {
-  network_acl_id = aws_network_acl.public_nacl.id
-  rule_number    = 100
-  egress         = false
-  protocol       = "tcp"
-  rule_action    = "allow"
-  cidr_block     = "0.0.0.0/0"
-  from_port      = 0
-  to_port        = 65535
+  egress {
+    protocol   = "All traffic"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  ingress {
+    protocol   = "All traffic"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
+  }
+
+  tags = {
+    Name = "public_nacl"
+  }
 }
 
 resource "aws_network_acl_association" "public_nacl_assoc" {
@@ -92,22 +99,31 @@ resource "aws_network_acl_association" "public_nacl_assoc" {
 
 #================================================================
 
+
 resource "aws_network_acl" "private_nacl" {
   vpc_id = aws_vpc.justvpc.id
-  tags = {
-  Name = "private_nacl"
-}
-}
 
-resource "aws_network_acl_rule" "private_nacl_rule" {
-  network_acl_id = aws_network_acl.private_nacl.id
-  rule_number    = 100
-  egress         = false
-  protocol       = "all"
-  rule_action    = "allow"
-  cidr_block     = "0.0.0.0/0"
-  from_port      = 0
-  to_port        = 0
+  egress {
+    protocol   = "All traffic"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "10.0.0.0/16"
+    from_port  = 22
+    to_port    = 22
+  }
+
+  ingress {
+    protocol   = "All traffic"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "10.0.0.0/16"
+    from_port  = 22
+    to_port    = 22
+  }
+
+  tags = {
+    Name = "public_nacl"
+  }
 }
 
 resource "aws_network_acl_association" "private_nacl_assoc" {
