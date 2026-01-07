@@ -3,11 +3,11 @@ variable "cidr_block" {
   default = "10.0.0.0/16"
 }
 variable "public_subnet_cidr_block" {
-  default = "10.1.0.0/24"
+  default = "10.0.0.0/20"
 }
 
 variable "private_subnet_cidr_block" {
-  default = "10.0.1.0/24"
+  default = "10.0.128.0/20"
 }
 
 
@@ -24,6 +24,7 @@ resource "aws_vpc" "justvpc" {
 resource "aws_subnet" "public_subnet" {
   vpc_id            = aws_vpc.justvpc.id
   cidr_block        = var.public_subnet_cidr_block
+  availability_zone = "us-east-2a"
   map_public_ip_on_launch = true
 
   tags = {
@@ -33,6 +34,7 @@ resource "aws_subnet" "public_subnet" {
 resource "aws_subnet" "private_subnet" {
   vpc_id            = aws_vpc.justvpc.id
   cidr_block        = var.private_subnet_cidr_block
+  availability_zone = "us-east-2a"
   map_public_ip_on_launch = false
 
   tags = {
@@ -42,6 +44,9 @@ resource "aws_subnet" "private_subnet" {
 
 resource "aws_internet_gateway" "ig" {
   vpc_id = aws_vpc.justvpc.id
+  tags = {
+    Name = "ig"
+  }
 }
 
 resource "aws_route_table" "public_rt" {
@@ -80,6 +85,9 @@ resource "aws_route_table_association" "private_rt_assoc" {
 
 resource "aws_network_acl" "public_nacl" {
   vpc_id = aws_vpc.justvpc.id
+tags = {
+  Name = "public_nacl"
+}
 }
 
 resource "aws_network_acl_rule" "public_nacl_rule" {
@@ -112,6 +120,9 @@ resource "aws_network_acl_association" "public_nacl_assoc" {
 
 resource "aws_network_acl" "private_nacl" {
   vpc_id = aws_vpc.justvpc.id
+  tags = {
+  Name = "private_nacl"
+}
 }
 
 resource "aws_network_acl_rule" "private_nacl_rule" {
@@ -162,6 +173,9 @@ resource "aws_security_group" "public_instance_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "public_instance_sg"
   }
 }
 
