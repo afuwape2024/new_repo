@@ -1,1 +1,7 @@
-#reset the module 
+#next task
+#create vpc peering
+# create and text ec2 each on each location
+# set up security layer system on it
+# create load balancer
+# auto scaling group on each 
+
