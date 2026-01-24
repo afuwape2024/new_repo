@@ -129,3 +129,19 @@ resource "aws_route_table_association" "chicago_vpc_private2_route_table_associa
   subnet_id      = var.chicago_vpc_private2_subnet
   route_table_id = aws_route_table.chicago_vpc_private_route_table.id
 }
+
+# Wait for NAT gateways to be fully created before proceeding
+resource "null_resource" "wait_for_nat_gateways" {
+  depends_on = [
+    aws_nat_gateway.detroit_nat_gw1,
+    aws_nat_gateway.chicago_nat_gw1
+  ]
+
+  provisioner "local-exec" {
+    command = "sleep 30"
+  }
+}
+
+output "nat_gateways_ready" {
+  value = null_resource.wait_for_nat_gateways.id
+}

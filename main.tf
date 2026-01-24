@@ -78,3 +78,24 @@ module "security_group" {
   chicago_vpc_igw = module.internet_gateway.chicago_vpc_igw
 
 }
+
+module "vpc_peering" {
+  depends_on = [ module.route_table ]
+  source = "./7vpc_peering"
+  detroit_vpc = module.detriot_vpc.detroit_vpc
+  detroit_vpc_public_subnet = module.detriot_vpc.detroit_vpc_public_subnet
+  detroit_vpc_private_subnet = module.detriot_vpc.detroit_vpc_private_subnet
+  detroit_vpc_public2_subnet = module.detriot_vpc.detroit_vpc_public2_subnet
+  detroit_vpc_private2_subnet = module.detriot_vpc.detroit_vpc_private2_subnet
+  detroit_vpc_public_route_table = module.route_table.detroit_vpc_public_route_table
+  detroit_vpc_private_route_table = module.route_table.detroit_vpc_private_route_table
+  chicago_vpc = module.chicago_vpc.chicago_vpc
+  chicago_vpc_public_subnet = module.chicago_vpc.chicago_vpc_public_subnet
+  chicago_vpc_private_subnet = module.chicago_vpc.chicago_vpc_private_subnet
+  chicago_vpc_public2_subnet = module.chicago_vpc.chicago_vpc_public2_subnet
+  chicago_vpc_private2_subnet = module.chicago_vpc.chicago_vpc_private2_subnet
+  chicago_vpc_public_route_table = module.route_table.chicago_vpc_public_route_table
+  chicago_vpc_private_route_table = module.route_table.chicago_vpc_private_route_table
+  detroit_vpc_igw = module.internet_gateway.detroit_vpc_igw
+  chicago_vpc_igw = module.internet_gateway.chicago_vpc_igw
+}
